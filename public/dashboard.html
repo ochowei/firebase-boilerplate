@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .container { max-width: 800px; margin: 0 auto; }
+    #user-info { margin-bottom: 1rem; }
+    #logout-btn { padding: 0.5rem 1rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Welcome to your Dashboard</h1>
+    <div id="user-info">
+      <p>Loading user data...</p>
+    </div>
+    <button id="logout-btn">Logout</button>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Config -->
+  <script src="/js/config.js"></script>
+
+  <script>
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        console.log("User is authenticated:", user.uid);
+        const userInfoElement = document.getElementById('user-info');
+
+        // Display user's email
+        userInfoElement.innerHTML = `<p><strong>Email:</strong> ${user.email}</p>`;
+
+        // Fetch user profile from Firestore
+        const userDocRef = db.collection('users').doc(user.uid);
+        userDocRef.get().then((doc) => {
+          if (doc.exists) {
+            const userData = doc.data();
+            console.log("User data from Firestore:", userData);
+            userInfoElement.innerHTML += `<p><strong>Display Name:</strong> ${userData.displayName || 'Not set'}</p>`;
+            userInfoElement.innerHTML += `<p><strong>Profile Created:</strong> ${new Date(userData.createdAt.seconds * 1000).toLocaleString()}</p>`;
+          } else {
+            console.log("No such document in Firestore!");
+          }
+        }).catch((error) => {
+          console.error("Error getting user document:", error);
+        });
+
+      } else {
+        // User is not signed in. Redirect to login page.
+        console.log("User is not authenticated. Redirecting to login page...");
+        window.location.href = '/index.html';
+      }
+    });
+
+    // Handle logout
+    const logoutButton = document.getElementById('logout-btn');
+    logoutButton.addEventListener('click', () => {
+      auth.signOut().then(() => {
+        console.log('User signed out successfully.');
+        // onAuthStateChanged will handle the redirect
+      }).catch((error) => {
+        console.error('Sign out error', error);
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/4.8.0/firebaseui.css" />
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .container { padding: 2rem; border: 1px solid #ccc; border-radius: 8px; }
+    #firebaseui-auth-container { margin-top: 1rem; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Login</h1>
+    <p>Please sign in to continue.</p>
+    <div id="firebaseui-auth-container"></div>
+    <div id="loader">Loading...</div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://cdn.firebase.com/libs/firebaseui/4.8.0/firebaseui.js"></script>
+
+  <!-- Firebase Config -->
+  <script src="/js/config.js"></script>
+
+  <script>
+    // Initialize the FirebaseUI Widget using Firebase.
+    const ui = new firebaseui.auth.AuthUI(firebase.auth());
+
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in, redirect to dashboard.
+        console.log("User is signed in. Redirecting to dashboard...");
+        window.location.href = '/dashboard.html';
+      } else {
+        // User is signed out, show the FirebaseUI widget.
+        console.log("User is signed out. Showing login UI.");
+        document.getElementById('loader').style.display = 'none';
+        ui.start('#firebaseui-auth-container', {
+          signInSuccessUrl: '/dashboard.html',
+          signInOptions: [
+            // List of OAuth providers supported.
+            firebase.auth.EmailAuthProvider.PROVIDER_ID
+          ],
+          // Other config options...
+        });
+      }
+    });
+  </script>
+
+</body>
+</html>
